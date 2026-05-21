@@ -63,6 +63,10 @@ Uma vez logado, você será redirecionado para a **Dashboard Administrativa** (`
 1. **Adicionar ao Inventário:** Clique em `+ Adicionar` no cartão de Inventário. Preencha o modal com um nome (ex: *Leite*), Quantidade (ex: *5*) e Estoque Mínimo (ex: *10*). Ao salvar, você verá que o item aparece na tabela, o card de KPI "Itens em Estoque" atualiza automaticamente, e, como a quantidade é menor que o mínimo, na próxima hora o sistema automatizado de alertas marcará este item como Crítico (ele aparecerá no Mural Público!).
 2. **Criar Evento:** Clique em `+ Criar Evento` no cartão de Eventos. Insira um nome, uma descrição e data para o futuro. Salve e veja as métricas do card de KPIs aumentarem na mesma hora, graças à reatividade do React Query!
 
+### Passo 4: Perfil e Recuperação de Senha
+1. **Perfil do Usuário:** Acesse a página de Perfil para visualizar o impacto do usuário, suas horas de voluntariado e gerenciar suas informações e foto de perfil.
+2. **Recuperação de Senha:** A plataforma possui o fluxo completo de "Esqueci minha senha" integrado com tokens seguros armazenados no banco de dados e interface intuitiva para o usuário criar uma nova senha.
+
 ---
 
 ## 🛠️ Stack Tecnológica
@@ -71,7 +75,7 @@ Uma vez logado, você será redirecionado para a **Dashboard Administrativa** (`
 * **Java 21 + Spring Boot 3**
 * **Spring Security + JWT (RS256)**: Proteção de rotas em alta segurança.
 * **Spring Data JPA + Hibernate**: Camada de persistência (ORM).
-* **Flyway**: Versionamento automático do esquema de banco de dados (`V1` e `V2`).
+* **Flyway**: Versionamento automático do esquema de banco de dados (`V1` a `V4`, incluindo sementes e tabelas de reset de senha).
 * **PostgreSQL**: SGBD Relacional rodando via Docker.
 
 ### Frontend
