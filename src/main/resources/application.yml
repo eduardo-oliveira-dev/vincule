@@ -32,4 +32,4 @@ rsa:
   public-key: classpath:certs/public.pem
 
 server:
-  port: 8080
+  port: 8081

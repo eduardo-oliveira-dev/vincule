@@ -30,7 +30,7 @@ public class InventoryService {
 
     public InventoryItemResponse createItem(InventoryItemRequest request) {
         User user = getCurrentUser();
-        
+
         InventoryItem item = InventoryItem.builder()
                 .organization(user.getOrganization())
                 .name(request.getName())
@@ -41,9 +41,42 @@ public class InventoryService {
                 .category(request.getCategory())
                 .isCritical(request.getQuantity() < request.getMinimumStock())
                 .build();
-                
+
         item = inventoryItemRepository.save(item);
         return mapToResponse(item);
+    }
+
+    public InventoryItemResponse updateItem(UUID id, InventoryItemRequest request) {
+        User user = getCurrentUser();
+        InventoryItem item = inventoryItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado"));
+
+        if (!item.getOrganization().getId().equals(user.getOrganization().getId())) {
+            throw new IllegalArgumentException("Você não tem permissão para editar este item");
+        }
+
+        item.setName(request.getName());
+        item.setQuantity(request.getQuantity());
+        item.setUnit(request.getUnit());
+        item.setExpiryDate(request.getExpiryDate());
+        item.setMinimumStock(request.getMinimumStock());
+        item.setCategory(request.getCategory());
+        item.setIsCritical(request.getQuantity() < request.getMinimumStock());
+
+        item = inventoryItemRepository.save(item);
+        return mapToResponse(item);
+    }
+
+    public void deleteItem(UUID id) {
+        User user = getCurrentUser();
+        InventoryItem item = inventoryItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado"));
+
+        if (!item.getOrganization().getId().equals(user.getOrganization().getId())) {
+            throw new IllegalArgumentException("Você não tem permissão para remover este item");
+        }
+
+        inventoryItemRepository.delete(item);
     }
 
     public List<InventoryItemResponse> listItems() {

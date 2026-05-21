@@ -3,8 +3,10 @@ package com.vincule.application.service;
 import com.vincule.application.dto.VolunteerEventRequest;
 import com.vincule.application.dto.VolunteerEventResponse;
 import com.vincule.domain.entity.User;
+import com.vincule.domain.entity.UserImpact;
 import com.vincule.domain.entity.VolunteerEvent;
 import com.vincule.domain.entity.VolunteerSchedule;
+import com.vincule.domain.repository.UserImpactRepository;
 import com.vincule.domain.repository.UserRepository;
 import com.vincule.domain.repository.VolunteerEventRepository;
 import com.vincule.domain.repository.VolunteerScheduleRepository;
@@ -26,6 +28,7 @@ public class EventService {
     private final VolunteerEventRepository eventRepository;
     private final VolunteerScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final UserImpactRepository userImpactRepository;
 
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -58,7 +61,7 @@ public class EventService {
     @Transactional
     public void confirmAttendance(UUID eventId) {
         User user = getCurrentUser();
-        
+
         VolunteerEvent event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Evento não encontrado"));
 
@@ -79,8 +82,14 @@ public class EventService {
                 .user(user)
                 .event(event)
                 .build();
-
         scheduleRepository.save(schedule);
+
+        // RF07 — Atualiza o perfil de impacto do voluntário (2h por evento, estimativa padrão)
+        userImpactRepository.findByUserId(user.getId()).ifPresent(impact -> {
+            impact.setTotalHours(impact.getTotalHours() + 2);
+            impact.setLastActivity(LocalDateTime.now());
+            userImpactRepository.save(impact);
+        });
     }
 
     private VolunteerEventResponse mapToResponse(VolunteerEvent event) {

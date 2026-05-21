@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,31 +21,54 @@ public class AlertService {
     @Scheduled(cron = "0 0 * * * *") // Executa no minuto 0 de cada hora
     @Transactional
     public void checkCriticalStock() {
-        log.info("Iniciando verificação de estoque crítico...");
+        log.info("Iniciando verificação de estoque crítico e validade...");
 
+        // RF02 — Estoque abaixo do mínimo
         List<InventoryItem> itemsNeedingAlert = inventoryItemRepository.findItemsNeedingAlert();
-
-        if (itemsNeedingAlert.isEmpty()) {
+        if (!itemsNeedingAlert.isEmpty()) {
+            for (InventoryItem item : itemsNeedingAlert) {
+                item.setIsCritical(true);
+                inventoryItemRepository.save(item);
+                log.warn("ALERTA ESTOQUE: '{}' (ID: {}) atingiu estoque crítico! Atual: {}, Mínimo: {}",
+                        item.getName(), item.getId(), item.getQuantity(), item.getMinimumStock());
+                sendPushNotification(item);
+            }
+            log.info("Verificação de estoque concluída. {} item(ns) marcado(s) como crítico(s).", itemsNeedingAlert.size());
+        } else {
             log.info("Nenhum item em estoque crítico encontrado.");
+        }
+
+        // RF08 — Validade próxima (7 dias)
+        checkExpiringItems();
+    }
+
+    private void checkExpiringItems() {
+        LocalDate today = LocalDate.now();
+        LocalDate warningDate = today.plusDays(7);
+
+        List<InventoryItem> expiringItems = inventoryItemRepository.findItemsExpiringWithinDays(today, warningDate);
+        if (expiringItems.isEmpty()) {
+            log.info("Nenhum item próximo da validade encontrado.");
             return;
         }
 
-        for (InventoryItem item : itemsNeedingAlert) {
-            item.setIsCritical(true);
-            inventoryItemRepository.save(item);
-            
-            // Simulação de envio de e-mail ou push notification
-            log.warn("ALERTA: O item '{}' (ID: {}) atingiu o estoque crítico! Quantidade atual: {}, Mínimo: {}",
-                    item.getName(), item.getId(), item.getQuantity(), item.getMinimumStock());
-            
-            sendPushNotification(item);
+        for (InventoryItem item : expiringItems) {
+            log.warn("ALERTA VALIDADE: '{}' (Org: {}) expira em {}. Estoque atual: {} {}.",
+                    item.getName(),
+                    item.getOrganization().getName(),
+                    item.getExpiryDate(),
+                    item.getQuantity(),
+                    item.getUnit());
+            // Simulação de notificação de validade
+            log.info("[EMAIL SIMULADO] Alerta de validade enviado para administradores da org '{}'.",
+                    item.getOrganization().getName());
         }
-
-        log.info("Verificação de estoque crítico finalizada. {} itens atualizados.", itemsNeedingAlert.size());
+        log.info("Verificação de validade concluída. {} item(ns) próximo(s) do vencimento.", expiringItems.size());
     }
 
     private void sendPushNotification(InventoryItem item) {
-        // Integração fake com o Firebase Cloud Messaging (FCM) / SendGrid
-        log.info("[FCM] Simulando envio de push notification para os administradores da org: {}", item.getOrganization().getName());
+        // Integração simulada com Firebase Cloud Messaging (FCM)
+        log.info("[FCM] Simulando push notification para administradores da org: '{}'.",
+                item.getOrganization().getName());
     }
 }

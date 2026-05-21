@@ -54,7 +54,7 @@ export const Dashboard = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Painel da Organização</h1>
         <p className="text-gray-600">Visão geral do inventário e dos eventos cadastrados pela sua organização.</p>
       </div>
-      
+
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center space-x-4">
@@ -93,7 +93,7 @@ export const Dashboard = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">Seu Inventário</h2>
-            <button 
+            <button
               onClick={() => setIsInventoryModalOpen(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded flex items-center gap-1 transition-colors"
             >
@@ -128,12 +128,12 @@ export const Dashboard = () => {
             )}
           </div>
         </div>
-        
+
         {/* Eventos */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">Seus Eventos</h2>
-            <button 
+            <button
               onClick={() => setIsEventModalOpen(true)}
               className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-1.5 px-3 rounded flex items-center gap-1 transition-colors"
             >
@@ -168,13 +168,13 @@ export const Dashboard = () => {
       </div>
 
       {/* Modais */}
-      <InventoryFormModal 
-        isOpen={isInventoryModalOpen} 
-        onClose={() => setIsInventoryModalOpen(false)} 
+      <InventoryFormModal
+        isOpen={isInventoryModalOpen}
+        onClose={() => setIsInventoryModalOpen(false)}
       />
-      <EventFormModal 
-        isOpen={isEventModalOpen} 
-        onClose={() => setIsEventModalOpen(false)} 
+      <EventFormModal
+        isOpen={isEventModalOpen}
+        onClose={() => setIsEventModalOpen(false)}
       />
     </div>
   );

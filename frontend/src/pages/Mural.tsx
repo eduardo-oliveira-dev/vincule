@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
+import { useState, useEffect } from 'react';
 import { AlertTriangle, CalendarDays, Users, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
@@ -26,6 +27,26 @@ interface VolunteerEvent {
 export const Mural = () => {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuthStore();
+  
+  // Inicializar estado a partir do localStorage
+  const [confirmedEvents, setConfirmedEvents] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('vincule_confirmed_events');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  
+  const [donatedItems, setDonatedItems] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('vincule_donated_items');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  // Salvar no localStorage sempre que houver alteração
+  useEffect(() => {
+    localStorage.setItem('vincule_confirmed_events', JSON.stringify(Array.from(confirmedEvents)));
+  }, [confirmedEvents]);
+
+  useEffect(() => {
+    localStorage.setItem('vincule_donated_items', JSON.stringify(Array.from(donatedItems)));
+  }, [donatedItems]);
   const navigate = useNavigate();
   const { data: criticalItems, isLoading: loadingItems } = useQuery({
     queryKey: ['criticalItems'],
@@ -46,9 +67,11 @@ export const Mural = () => {
   const confirmMutation = useMutation({
     mutationFn: async (eventId: string) => {
       await api.post(`/events/${eventId}/confirm`);
+      return eventId;
     },
-    onSuccess: () => {
+    onSuccess: (eventId) => {
       queryClient.invalidateQueries({ queryKey: ['publicEvents'] });
+      setConfirmedEvents(prev => new Set(prev).add(eventId));
       alert("Presença confirmada com sucesso! Muito obrigado pelo seu apoio.");
     },
     onError: (error: any) => {
@@ -106,12 +129,24 @@ export const Mural = () => {
                   <p className="mt-2 text-sm text-red-700 font-medium">
                     Estoque mínimo necessário: {item.minimumStock} {item.unit}
                   </p>
-                  <button 
-                    onClick={() => alert(`Obrigado pelo interesse em doar "${item.name}"! Entre em contato com a organização responsável para combinar a entrega. Quantidade necessária: ${item.minimumStock - item.quantity} ${item.unit}.`)}
-                    className="mt-5 w-full bg-red-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
-                  >
-                    Quero Doar
-                  </button>
+                  {donatedItems.has(item.id) ? (
+                    <button 
+                      disabled
+                      className="mt-5 w-full bg-green-50 text-green-700 font-medium py-2.5 px-4 border border-green-200 rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors"
+                    >
+                      <CheckCircle size={18} /> Interesse Registrado
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        alert(`Obrigado pelo interesse em doar "${item.name}"! Entre em contato com a organização responsável para combinar a entrega. Quantidade necessária: ${item.minimumStock - item.quantity} ${item.unit}.`);
+                        setDonatedItems(prev => new Set(prev).add(item.id));
+                      }}
+                      className="mt-5 w-full bg-red-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                    >
+                      Quero Doar
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -157,22 +192,31 @@ export const Mural = () => {
                   </div>
                 </div>
                 <div className="p-4 border-t border-gray-100 bg-gray-50">
-                  <button 
-                    onClick={() => handleParticipate(event.id)}
-                    disabled={confirmMutation.isPending || event.confirmedSlots >= event.maxVolunteers}
-                    className={`w-full font-medium py-2.5 px-4 border rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors
-                      ${event.confirmedSlots >= event.maxVolunteers 
-                        ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed' 
-                        : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}
-                  >
-                    {event.confirmedSlots >= event.maxVolunteers ? (
-                      'Vagas Esgotadas'
-                    ) : (
-                      <>
-                        <CheckCircle size={18} /> Quero Participar
-                      </>
-                    )}
-                  </button>
+                  {confirmedEvents.has(event.id) ? (
+                    <button 
+                      disabled
+                      className="w-full font-medium py-2.5 px-4 border rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors bg-green-50 text-green-700 border-green-200"
+                    >
+                      <CheckCircle size={18} /> Presença Confirmada
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => handleParticipate(event.id)}
+                      disabled={confirmMutation.isPending || event.confirmedSlots >= event.maxVolunteers}
+                      className={`w-full font-medium py-2.5 px-4 border rounded-lg shadow-sm flex justify-center items-center gap-2 transition-colors
+                        ${event.confirmedSlots >= event.maxVolunteers 
+                          ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed' 
+                          : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}
+                    >
+                      {event.confirmedSlots >= event.maxVolunteers ? (
+                        'Vagas Esgotadas'
+                      ) : (
+                        <>
+                          <CheckCircle size={18} /> Quero Participar
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
