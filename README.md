@@ -52,11 +52,23 @@ Para avaliar o sistema operando em 100% da sua capacidade através do fluxo do F
 2. Esta página carrega anonimamente os eventos futuros e os itens que estão marcados como **Urgentes** (abaixo do estoque mínimo no banco de dados).
 
 ### Passo 2: Acesso Restrito (Login)
-O sistema exige autenticação. Como a plataforma está limpa, você pode usar a conta de testes que foi configurada pela primeira migração/inserção ou cadastrar via cURL (se for o caso), mas assumindo o ambiente de teste, criamos uma rota padrão.
-* Para facilitar o teste, o usuário administrador default criado nas rotas da API durante a nossa validação é:
-  * **E-mail:** `maria.silva@example.com`
-  * **Senha:** `password123`
-* Acesse `http://localhost:5173/login`, insira as credenciais e clique em Entrar.
+O sistema exige autenticação. A plataforma já conta com três usuários de demonstração configurados nas migrações iniciais do banco de dados:
+
+**1. Ricardo (Administrador da ONG)**
+Ideal para testar a Dashboard e criação de itens/eventos.
+* **E-mail:** `ricardo@vincule.org`
+* **Senha:** `password123`
+
+**2. Beatriz (Voluntária)**
+Ideal para testar o Mural Público, métricas de impacto e confirmação de presença.
+* **E-mail:** `beatriz@email.com`
+* **Senha:** `password123`
+
+**3. Maria Silva (Administradora Alternativa)**
+* **E-mail:** `maria.silva@example.com`
+* **Senha:** `password123`
+
+* Acesse `http://localhost:5173/login`, insira as credenciais de sua escolha e clique em Entrar.
 
 ### Passo 3: Operando a Dashboard
 Uma vez logado, você será redirecionado para a **Dashboard Administrativa** (`/dashboard`). Teste as funcionalidades completas:
